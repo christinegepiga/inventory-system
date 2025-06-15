@@ -15,7 +15,7 @@ class ProductSeeder extends Seeder
     {
         $faker = \Faker\Factory::create();
 
-        for ($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < 50; $i++) {
             Product::create([
                 'name' => $faker->words(3, true),
                 'sku' => strtoupper(Str::random(10)),
