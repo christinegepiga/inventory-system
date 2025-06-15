@@ -86,22 +86,72 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($products as $product)
-                    <tr class="border-t">
-                        <td class="p-3">{{ $product->name }}</td>
-                        <td class="p-3">{{ $product->sku }}</td>
-                        <td class="p-3 text-right">₱ {{ number_format($product->price, 2) }}</td>
-                        <td class="p-3 text-right">{{ $product->current_quantity }}</td>
-                        <td class="p-3 text-right">{{ $product->initial_quantity }}</td>
-                        <td class="p-3 text-right">{{ $product->movement_count }}</td>
-                        <td class="p-3 text-right">
-                            <button wire:click="showHistory({{ $product->id }})" class="text-blue-500 hover:underline">History</button>
-                        </td>
+                @forelse($products as $product)
+                    <tr class="border-t hover:bg-gray-50" wire:key="product-{{ $product->id }}">
+                        @if($editingProductId === $product->id)
+                            <td colspan="7" class="p-4 bg-gray-50">
+                                <form wire:submit.prevent="updateProduct" class="grid grid-cols-1 md:grid-cols-6 gap-4">
+                                    <div>
+                                        <label class="block text-sm text-gray-600">Name</label>
+                                        <input type="text" wire:model="editProductForm.name" class="w-full p-2 border rounded">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm text-gray-600">SKU</label>
+                                        <input type="text" wire:model="editProductForm.sku" class="w-full p-2 border rounded">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm text-gray-600">Price</label>
+                                        <input type="number" step="0.01" wire:model="editProductForm.price" class="w-full p-2 border rounded">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm text-gray-600">Initial Qty</label>
+                                        <input type="number" wire:model="editProductForm.initial_quantity" class="w-full p-2 border rounded">
+                                    </div>
+                                    <div class="flex items-end gap-2">
+                                        <button type="submit" class="bg-blue-500 text-white px-3 py-1 rounded text-sm">Update</button>
+                                        <button wire:click="cancelEdit" type="button" class="bg-gray-500 text-white px-3 py-1 rounded text-sm">Cancel</button>
+                                    </div>
+                                </form>
+                            </td>
+                        @else
+                            <td class="p-3">{{ $product->name }}</td>
+                            <td class="p-3">{{ $product->sku }}</td>
+                            <td class="p-3 text-right">${{ number_format($product->price, 2) }}</td>
+                            <td class="p-3 text-right">{{ $product->current_quantity }}</td>
+                            <td class="p-3 text-right">{{ $product->initial_quantity }}</td>
+                            <td class="p-3 text-right">{{ $product->movement_count }}</td>
+                            <td class="p-3 text-right space-x-2">
+                                <button wire:click="editProduct({{ $product->id }})" class="text-blue-500 hover:text-blue-700">
+                                    Edit
+                                </button>
+                            <button
+                            class="text-red-500 hover:text-red-700"
+                            type="button"
+                            wire:click="deleteProduct(@js($product->id))"
+                            wire:confirm="Are you sure?"
+                        >
+                            Delete 
+                        </button>
+
+                                <button wire:click="showHistory({{ $product->id }})" class="text-green-500 hover:text-green-700">
+                                    History
+                                </button>
+                            </td>
+                        @endif
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="100" class="text-center"><em>No products added yet...</em></td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
+    @if(!blank($products))
+        <div class="mt-4">
+            {{ $products->links() }}
+        </div>
     </div>
+    @endif
     
     <!-- Movement History Modal -->
     @if($showMovementHistory)

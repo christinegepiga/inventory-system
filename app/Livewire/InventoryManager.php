@@ -6,19 +6,91 @@ namespace App\Livewire;
 use App\Models\Product;
 use App\Models\InventoryMovement;
 use Livewire\Component;
+use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
 
 class InventoryManager extends Component
 {
-    public $products = [];
+    use WithPagination;
+
+    public $perPage = 10; // Number of products per page
+
     public $movements = [];
     public $productForm = [
         'name' => '',
         'sku' => '',
         'description' => '',
         'price' => '',
-        'initial_quantity' => 0
+        'initial_quantity' => 1
     ];
+    public $editingProductId = null;
+    public $editProductForm = [
+        'name' => '',
+        'sku' => '',
+        'description' => '',
+        'price' => '',
+        'initial_quantity' => 1
+    ];
+
+    public function editProduct($productId)
+    {
+        $this->editingProductId = $productId;
+        $product = Product::find($productId);
+        $this->editProductForm = [
+            'name' => $product->name,
+            'sku' => $product->sku,
+            'description' => $product->description,
+            'price' => $product->price,
+            'initial_quantity' => $product->initial_quantity
+        ];
+    }
+
+    public function updateProduct()
+    {
+        $this->validate([
+            'editProductForm.name' => 'required|string|max:255',
+            'editProductForm.sku' => 'required|string|max:50|unique:products,sku,'.$this->editingProductId,
+            'editProductForm.price' => 'required|numeric|min:0',
+            'editProductForm.initial_quantity' => 'required|integer|min:0'
+        ]);
+
+        DB::transaction(function () {
+            try {
+                $product = Product::find($this->editingProductId);
+                $product->update($this->editProductForm);
+                $this->cancelEdit();
+            } catch (\Exception $e) {
+                throw $e;
+            }
+        });
+    }
+
+    public function deleteProduct($productId)
+    {
+        DB::transaction(function () use ($productId) {
+            try {
+                $product = Product::findOrFail($productId);
+                
+                // Delete related movements first
+                $product->movements()->delete();
+                
+                // Then delete the product
+                $product->delete();
+                
+                $this->loadProducts();
+            } catch (\Exception $e) {
+                $this->addError('delete', 'Failed to delete product: ' . $e->getMessage());
+            }
+        });
+    }
+    
+
+    public function cancelEdit()
+    {
+        $this->editingProductId = null;
+        $this->reset('editProductForm');
+    }
+
     public $movementForm = [
         'product_id' => '',
         'quantity' => 1,
@@ -32,13 +104,15 @@ class InventoryManager extends Component
 
     public function mount()
     {
-        $this->loadProducts();
+        // No need to call loadProducts()
     }
 
-    public function loadProducts()
+    public function updating($name, $value)
     {
-        // Using the view we created
-        $this->products = DB::table('inventory_summary')->get()->toArray();
+        // Reset to first page when searching/filtering (if you add search later)
+        if ($name === 'search') {
+            $this->resetPage();
+        }
     }
 
     public function createProduct()
@@ -60,7 +134,6 @@ class InventoryManager extends Component
                     'price' => '',
                     'initial_quantity' => 0
                 ];
-                $this->loadProducts();
             } catch (\Exception $e) {
                 throw $e;
             }
@@ -125,7 +198,10 @@ class InventoryManager extends Component
 
     public function render()
     {
-        return view('livewire.inventory-manager')
-            ->layout('components.layouts.app');
+        $products = DB::table('inventory_summary')->paginate($this->perPage);
+
+        return view('livewire.inventory-manager', [
+            'products' => $products,
+        ])->layout('components.layouts.app');
     }
 }
