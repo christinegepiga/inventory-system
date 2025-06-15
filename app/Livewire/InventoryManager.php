@@ -198,7 +198,7 @@ class InventoryManager extends Component
 
     public function render()
     {
-        $products = DB::table('inventory_summary')->paginate($this->perPage);
+        $products = DB::table('inventory_summary')->simplePaginate($this->perPage);
 
         return view('livewire.inventory-manager', [
             'products' => $products,
