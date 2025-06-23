@@ -116,7 +116,7 @@
                         @else
                             <td class="p-3">{{ $product->name }}</td>
                             <td class="p-3">{{ $product->sku }}</td>
-                            <td class="p-3 text-right">${{ number_format($product->price, 2) }}</td>
+                            <td class="p-3 text-right">₱{{ number_format($product->price, 2) }}</td>
                             <td class="p-3 text-right">{{ $product->current_quantity }}</td>
                             <td class="p-3 text-right">{{ $product->initial_quantity }}</td>
                             <td class="p-3 text-right">{{ $product->movement_count }}</td>
@@ -124,14 +124,14 @@
                                 <button wire:click="editProduct({{ $product->id }})" class="text-blue-500 hover:text-blue-700">
                                     Edit
                                 </button>
-                            <button
-                            class="text-red-500 hover:text-red-700"
-                            type="button"
-                            wire:click="deleteProduct(@js($product->id))"
-                            wire:confirm="Are you sure?"
-                        >
-                            Delete 
-                        </button>
+                                <button
+                                    class="text-red-500 hover:text-red-700"
+                                    type="button"
+                                    wire:click="deleteProduct(@js($product->id))"
+                                    wire:confirm="Are you sure you want to delete '{{ $product->name }}'? \n\nThis action cannot be undone and will also remove all inventory history for this product."
+                                >
+                                    Delete 
+                                </button>
 
                                 <button wire:click="showHistory({{ $product->id }})" class="text-green-500 hover:text-green-700">
                                     History

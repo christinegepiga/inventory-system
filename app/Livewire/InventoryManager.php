@@ -77,7 +77,7 @@ class InventoryManager extends Component
                 // Then delete the product
                 $product->delete();
                 
-                $this->loadProducts();
+                // $this->loadProducts();
             } catch (\Exception $e) {
                 $this->addError('delete', 'Failed to delete product: ' . $e->getMessage());
             }
@@ -158,7 +158,7 @@ class InventoryManager extends Component
                     'type' => 'in',
                     'reason' => ''
                 ];
-                $this->loadProducts();
+                //$this->loadProducts();
             } catch (\Exception $e) {
                 throw $e;
             }
