@@ -16,7 +16,7 @@ return new class extends Migration
         DB::unprepared('DROP TRIGGER IF EXISTS after_movement_insert');
 
         // Create the stored procedure
-                DB::unprepared('
+        DB::unprepared('
             CREATE PROCEDURE GetProductInventoryHistory(IN product_id INT)
             BEGIN
                 SELECT 
