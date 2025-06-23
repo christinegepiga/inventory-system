@@ -76,7 +76,7 @@
         <table class="w-full border-collapse">
             <thead>
                 <tr class="bg-gray-100">
-                    <th class="p-3 text-left">Name</th>
+                    <th class="p-3 text-left">Product Name</th>
                     <th class="p-3 text-left">SKU</th>
                     <th class="p-3 text-right">Price</th>
                     <th class="p-3 text-right">Current Qty</th>
@@ -92,7 +92,7 @@
                             <td colspan="7" class="p-4 bg-gray-50">
                                 <form wire:submit.prevent="updateProduct" class="grid grid-cols-1 md:grid-cols-6 gap-4">
                                     <div>
-                                        <label class="block text-sm text-gray-600">Name</label>
+                                        <label class="block text-sm text-gray-600">Product Name</label>
                                         <input type="text" wire:model="editProductForm.name" class="w-full p-2 border rounded">
                                     </div>
                                     <div>
