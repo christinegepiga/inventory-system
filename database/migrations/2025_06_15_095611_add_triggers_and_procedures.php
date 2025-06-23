@@ -42,14 +42,15 @@ return new class extends Migration
         // Create the trigger
         DB::unprepared('
             CREATE TRIGGER after_movement_insert
-            AFTER INSERT ON inventory_movements
+            BEFORE INSERT ON inventory_movements
             FOR EACH ROW
             BEGIN
                 DECLARE current_qty INT;
                 DECLARE initial_qty INT;
+                DECLARE product_name VARCHAR(255);
                 
-                -- Get initial quantity from products table
-                SELECT initial_quantity INTO initial_qty
+                -- Get product info
+                SELECT initial_quantity, name INTO initial_qty, product_name
                 FROM products
                 WHERE id = NEW.product_id;
                 
@@ -64,9 +65,15 @@ return new class extends Migration
                 WHERE product_id = NEW.product_id;
                 
                 -- Prevent negative inventory
-                IF current_qty < 0 THEN
-                    SIGNAL SQLSTATE "45000" 
-                    SET MESSAGE_TEXT = "Cannot have negative inventory";
+                IF NEW.type = "out" AND (current_qty - NEW.quantity) < 0 THEN
+                    SET @error_msg = CONCAT(
+                        \'Insufficient stock for \', 
+                        product_name, 
+                        \'. Available: \', 
+                        current_qty
+                    );
+                    SIGNAL SQLSTATE \'45000\' 
+                    SET MESSAGE_TEXT = @error_msg;
                 END IF;
             END
         ');

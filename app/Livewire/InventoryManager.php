@@ -14,7 +14,7 @@ class InventoryManager extends Component
     use WithPagination;
 
     public $perPage = 10; // Number of products per page
-    public $allProducts = []; // <-- Add this line
+    public $allProducts = []; 
 
     public $movements = [];
     public $productForm = [
@@ -78,7 +78,6 @@ class InventoryManager extends Component
                 // Then delete the product
                 $product->delete();
                 
-                // $this->loadProducts();
             } catch (\Exception $e) {
                 $this->addError('delete', 'Failed to delete product: ' . $e->getMessage());
             }
@@ -111,7 +110,7 @@ class InventoryManager extends Component
 
     public function updating($name, $value)
     {
-        // Reset to first page when searching/filtering (if you add search later)
+        // Reset to first page when searching/filtering
         if ($name === 'search') {
             $this->resetPage();
         }
@@ -151,20 +150,45 @@ class InventoryManager extends Component
             'movementForm.reason' => 'required|string|max:255'
         ]);
 
-        DB::transaction(function () {
-            try {
+        try {
+            DB::transaction(function () {
+                // Check stock before attempting transaction
+                if ($this->movementForm['type'] === 'out') {
+                    $product = Product::find($this->movementForm['product_id']);
+                    $currentStock = $product->current_quantity;
+                    
+                    if ($this->movementForm['quantity'] > $currentStock) {
+                        $productName = $product->name ?? 'Unknown Product';
+                        throw new \Exception(
+                            "Cannot process transaction for '{$productName}'. Only {$currentStock} items available."
+                        );
+                    }
+                }
+
                 InventoryMovement::create($this->movementForm);
+                
+                // Reset form
                 $this->movementForm = [
                     'product_id' => '',
                     'quantity' => 1,
                     'type' => 'in',
                     'reason' => ''
                 ];
-                //$this->loadProducts();
-            } catch (\Exception $e) {
-                throw $e;
-            }
-        });
+                
+                // Show success message
+                $this->dispatch('showToast', 
+                    type: 'success',
+                    message: 'Transaction recorded successfully.',
+                    duration: 5000
+                );
+            });
+        } catch (\Exception $e) {
+            $this->dispatch('showToast', 
+                type: 'error',
+                message: $e->getMessage(),
+                duration: 5000
+            );
+        }
     }
 
     public function showHistory($productId)

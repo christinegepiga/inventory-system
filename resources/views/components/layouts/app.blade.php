@@ -27,7 +27,8 @@
         <!-- Page Content -->
         {{ $slot }}
     </div>
-
+    <!-- Livewire Toast Notification -->
+    @livewire('toast-notification')
     @livewireScripts
 </body>
 </html>
