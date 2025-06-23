@@ -14,6 +14,7 @@ class InventoryManager extends Component
     use WithPagination;
 
     public $perPage = 10; // Number of products per page
+    public $allProducts = []; // <-- Add this line
 
     public $movements = [];
     public $productForm = [
@@ -104,7 +105,8 @@ class InventoryManager extends Component
 
     public function mount()
     {
-        // No need to call loadProducts()
+        // Load all products for the movement form
+        $this->allProducts = \App\Models\Product::orderBy('name')->get();
     }
 
     public function updating($name, $value)
@@ -202,6 +204,7 @@ class InventoryManager extends Component
 
         return view('livewire.inventory-manager', [
             'products' => $products,
+            'allProducts' => $this->allProducts, // Pass to view
         ])->layout('components.layouts.app');
     }
 }

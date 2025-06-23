@@ -42,7 +42,7 @@
                     <label class="block text-gray-700">Product</label>
                     <select wire:model="movementForm.product_id" class="w-full p-2 border rounded">
                         <option value="">Select Product</option>
-                        @foreach($products as $product)
+                        @foreach($allProducts as $product)
                             <option value="{{ $product->id }}">{{ $product->name }} ({{ $product->sku }})</option>
                         @endforeach
                     </select>
@@ -117,8 +117,8 @@
                             <td class="p-3">{{ $product->name }}</td>
                             <td class="p-3">{{ $product->sku }}</td>
                             <td class="p-3 text-right">₱{{ number_format($product->price, 2) }}</td>
-                            <td class="p-3 text-right">{{ $product->current_quantity }}</td>
-                            <td class="p-3 text-right">{{ $product->initial_quantity }}</td>
+                            <td class="p-3 text-right">{{ number_format($product->current_quantity,1) }}</td>
+                            <td class="p-3 text-right">{{ number_format($product->initial_quantity,1) }}</td>
                             <td class="p-3 text-right">{{ $product->movement_count }}</td>
                             <td class="p-3 text-right space-x-2">
                                 <button wire:click="editProduct({{ $product->id }})" class="text-blue-500 hover:text-blue-700">
